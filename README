@@ -1,0 +1,1 @@
+This library has been adapted slightly from Twisted <http://twistedmatrix.com/trac/> to be used without the rest of the Twisted library, most notably the reactor.
