@@ -9,10 +9,9 @@ Maintainer: Glyph Lefkowitz
 Adapted to independent modules by Mikeal Rogers <mikeal.rogers@gmail.com>
 """
 
-import traceback
-
 # modfication : Use standard Python logger facilities
-from logging import info as log
+import logging
+import traceback
 
 from twisted.python import failure
 
@@ -75,14 +74,6 @@ class AlreadyCalledError(Exception):
 
 class TimeoutError(Exception):
     pass
-
-
-
-def logError(err):
-    # XXX: This isn't used in the tests, in this module or anywhere in the
-    # Twisted code base. Not sure of the trade-offs when deleting.
-    log.err(err)
-    return err
 
 
 
@@ -439,11 +430,11 @@ class DebugInfo:
         state, print a traceback (if said errback is a Failure).
         """
         if self.failResult is not None:
-            log.msg("Unhandled error in Deferred:", isError=True)
+            logging.error("Unhandled error in Deferred:")
             debugInfo = self._getDebugTracebacks()
             if debugInfo != '':
-                log.msg("(debug: " + debugInfo + ")", isError=True)
-            log.err(self.failResult)
+                logging.error("(debug: " + debugInfo + ")")
+            logging.error(self.failResult)
 
 
 

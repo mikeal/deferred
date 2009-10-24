@@ -7,12 +7,12 @@ Test cases for defer module.
 """
 
 import gc
+import logging
 
 import deferred
 
-from twisted.python import log
 from twisted.python.failure import Failure
-from twisted.trial import unittest, util
+from twisted.trial import unittest
 
 
 
@@ -648,6 +648,21 @@ class AlreadyCalledTestCase(unittest.TestCase):
 
 
 
+class _AppendingHandler(logging.Handler):
+    """
+    Log handler that appends emitted records to a list.
+    """
+
+    def __init__(self, records):
+        logging.Handler.__init__(self)
+        self._records = records
+
+
+    def emit(self, record):
+        self._records.append(record)
+
+
+
 class LogTestCase(unittest.TestCase):
     """
     Test logging of unhandled errors.
@@ -658,24 +673,25 @@ class LogTestCase(unittest.TestCase):
         Add a custom observer to observer logging.
         """
         self.c = []
-        log.addObserver(self.c.append)
+        self._handler = _AppendingHandler(self.c)
+        logging.getLogger('').addHandler(self._handler)
 
 
     def tearDown(self):
         """
         Remove the observer.
         """
-        log.removeObserver(self.c.append)
+        logging.getLogger('').removeHandler(self._handler)
 
 
     def _check(self):
         """
         Check the output of the log observer to see if the error is present.
         """
-        c2 = [e for e in self.c if e["isError"]]
-        self.assertEquals(len(c2), 2)
-        c2[1]["failure"].trap(ZeroDivisionError)
-        self.flushLoggedErrors(ZeroDivisionError)
+        errors = [
+            record for record in self.c if record.levelno == logging.ERROR]
+        self.assertEquals(len(errors), 2)
+        errors[1].msg.trap(ZeroDivisionError)
 
 
     def test_errorLog(self):
