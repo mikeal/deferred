@@ -11,11 +11,6 @@ Adapted to independent modules by Mikeal Rogers <mikeal.rogers@gmail.com>
 
 import traceback
 
-# modification : removing twisted imports
-# Twisted imports
-# from twisted.python import log, failure, lockfile
-# from twisted.python.util import unsignedID, mergeFunctionMetadata
-
 # modfication : Use standard Python logger facilities
 from logging import info as log
 
