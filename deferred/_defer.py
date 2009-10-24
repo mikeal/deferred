@@ -17,8 +17,10 @@ import traceback
 # from twisted.python.util import unsignedID, mergeFunctionMetadata
 
 # modfication : Use standard Python logger facilities
-from logging import error as failure
 from logging import info as log
+
+from twisted.python import failure
+
 
 # modification : unsignedID function from twisted.python.util.unsignedID
 import sys
