@@ -74,8 +74,12 @@ class AlreadyCalledError(Exception):
 
 
 def logError(err):
+    # XXX: This isn't used in the tests, in this module or anywhere in the
+    # Twisted code base. Not sure of the trade-offs when deleting.
     log.err(err)
     return err
+
+
 
 def succeed(result):
     """
