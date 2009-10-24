@@ -315,4 +315,4 @@ class TestFormattableTraceback(unittest.TestCase):
 
 
 if sys.version_info[:2] >= (2, 5):
-    from twisted.test.generator_failure_tests import TwoPointFiveFailureTests
+    from deferred.tests.generator_failure_tests import TwoPointFiveFailureTests
