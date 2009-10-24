@@ -8,11 +8,11 @@ Test cases for defer module.
 
 import gc
 
-from twisted.trial import unittest, util
 from twisted.internet import reactor, defer
-from twisted.python import failure, log
-
 from twisted.internet.task import Clock
+from twisted.python import log
+from twisted.python.failure import Failure
+from twisted.trial import unittest, util
 
 
 
@@ -296,7 +296,7 @@ class DeferredTestCase(unittest.TestCase):
         self.assert_(isinstance(l[0].value, ZeroDivisionError))
         l = []
         d = defer.Deferred().addCallback(
-            lambda _: failure.Failure(ZeroDivisionError())).addErrback(l.append)
+            lambda _: Failure(ZeroDivisionError())).addErrback(l.append)
         d.callback(1)
         self.assert_(isinstance(l[0].value, ZeroDivisionError))
 
@@ -332,7 +332,7 @@ class DeferredTestCase(unittest.TestCase):
         dl = [defer.succeed(1), defer.fail(ValueError)]
         defer.gatherResults(dl).addErrback(l.append)
         self.assertEquals(len(l), 1)
-        self.assert_(isinstance(l[0], failure.Failure))
+        self.assert_(isinstance(l[0], Failure))
         # get rid of error
         dl[1].addErrback(lambda e: 1)
 
@@ -382,12 +382,12 @@ class DeferredTestCase(unittest.TestCase):
     def test_maybeDeferredAsyncError(self):
         """
         L{defer.maybeDeferred} should let L{defer.Deferred} instance pass by
-        so that L{failure.Failure} returned by the original instance is the
+        so that L{Failure} returned by the original instance is the
         same.
         """
         d = defer.Deferred()
         d2 = defer.maybeDeferred(lambda: d)
-        d.errback(failure.Failure(RuntimeError()))
+        d.errback(Failure(RuntimeError()))
         return self.assertFailure(d2, RuntimeError)
 
 
@@ -465,7 +465,7 @@ class FirstErrorTests(unittest.TestCase):
         try:
             raise exc
         except:
-            f = failure.Failure()
+            f = Failure()
 
         error = defer.FirstError(f, 3)
         self.assertEqual(
@@ -482,7 +482,7 @@ class FirstErrorTests(unittest.TestCase):
         try:
             raise exc
         except:
-            f = failure.Failure()
+            f = Failure()
 
         error = defer.FirstError(f, 5)
         self.assertEqual(
@@ -499,7 +499,7 @@ class FirstErrorTests(unittest.TestCase):
         try:
             1 / 0
         except:
-            firstFailure = failure.Failure()
+            firstFailure = Failure()
 
         one = defer.FirstError(firstFailure, 13)
         anotherOne = defer.FirstError(firstFailure, 13)
@@ -507,7 +507,7 @@ class FirstErrorTests(unittest.TestCase):
         try:
             raise ValueError("bar")
         except:
-            secondFailure = failure.Failure()
+            secondFailure = Failure()
 
         another = defer.FirstError(secondFailure, 9)
 
@@ -547,11 +547,11 @@ class AlreadyCalledTestCase(unittest.TestCase):
 
 
     def _err_1(self, d):
-        d.errback(failure.Failure(RuntimeError()))
+        d.errback(Failure(RuntimeError()))
 
 
     def _err_2(self, d):
-        d.errback(failure.Failure(RuntimeError()))
+        d.errback(Failure(RuntimeError()))
 
 
     def testAlreadyCalled_CC(self):
