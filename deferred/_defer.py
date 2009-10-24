@@ -71,8 +71,7 @@ def mergeFunctionMetadata(f, g):
 class AlreadyCalledError(Exception):
     pass
 
-class TimeoutError(Exception):
-    pass
+
 
 def logError(err):
     log.err(err)
