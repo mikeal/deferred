@@ -73,6 +73,11 @@ class AlreadyCalledError(Exception):
 
 
 
+class TimeoutError(Exception):
+    pass
+
+
+
 def logError(err):
     # XXX: This isn't used in the tests, in this module or anywhere in the
     # Twisted code base. Not sure of the trade-offs when deleting.
