@@ -18,7 +18,7 @@ import inspect
 import opcode
 from cStringIO import StringIO
 
-from twisted.python import reflect
+from deferred import _reflect
 
 count = 0
 traceupLength = 4
@@ -269,9 +269,9 @@ class Failure:
                 ])
             tb = tb.tb_next
         if inspect.isclass(self.type) and issubclass(self.type, Exception):
-            parentCs = reflect.allYourBase(self.type)
-            self.parents = map(reflect.qual, parentCs)
-            self.parents.append(reflect.qual(self.type))
+            parentCs = _reflect.allYourBase(self.type)
+            self.parents = map(_reflect.qual, parentCs)
+            self.parents.append(_reflect.qual(self.type))
         else:
             self.parents = [self.type]
 
@@ -312,7 +312,7 @@ class Failure:
         for error in errorTypes:
             err = error
             if inspect.isclass(error) and issubclass(error, Exception):
-                err = reflect.qual(error)
+                err = _reflect.qual(error)
             if err in self.parents:
                 return error
         return None
@@ -412,8 +412,8 @@ class Failure:
         c['frames'] = [
             [
                 v[0], v[1], v[2],
-                [(j[0], reflect.safe_repr(j[1])) for j in v[3]],
-                [(j[0], reflect.safe_repr(j[1])) for j in v[4]]
+                [(j[0], _reflect.safe_repr(j[1])) for j in v[3]],
+                [(j[0], _reflect.safe_repr(j[1])) for j in v[4]]
             ] for v in self.frames
         ]
 
@@ -426,8 +426,8 @@ class Failure:
             c['stack'] = [
                 [
                     v[0], v[1], v[2],
-                    [(j[0], reflect.safe_repr(j[1])) for j in v[3]],
-                    [(j[0], reflect.safe_repr(j[1])) for j in v[4]]
+                    [(j[0], _reflect.safe_repr(j[1])) for j in v[3]],
+                    [(j[0], _reflect.safe_repr(j[1])) for j in v[4]]
                 ] for v in self.stack
             ]
 
@@ -460,7 +460,7 @@ class Failure:
         """Get a string of the exception which caused this Failure."""
         if isinstance(self.value, Failure):
             return self.value.getErrorMessage()
-        return reflect.safe_str(self.value)
+        return _reflect.safe_str(self.value)
 
     def getBriefTraceback(self):
         io = StringIO()
@@ -513,8 +513,8 @@ class Failure:
             if isinstance(self.type, (str, unicode)):
                 w(self.type + "\n")
             else:
-                w("%s: %s\n" % (reflect.qual(self.type),
-                                reflect.safe_str(self.value)))
+                w("%s: %s\n" % (_reflect.qual(self.type),
+                                _reflect.safe_str(self.value)))
         # chaining
         if isinstance(self.value, Failure):
             # TODO: indentation for chained failures?
