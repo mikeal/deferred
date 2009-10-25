@@ -4,7 +4,8 @@ import sys
 
 from twisted.trial import unittest
 
-from deferred import waitForDeferred, deferredGenerator, Deferred, fail, succeed
+from deferred import deferredGenerator, Deferred, fail, succeed
+from deferred import waitForDeferred
 
 
 # XXX: These need the reactor in order to create an asynchronously-fired
