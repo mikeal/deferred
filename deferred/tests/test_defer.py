@@ -10,8 +10,8 @@ import gc
 import logging
 
 import deferred
+from deferred import Failure
 
-from twisted.python.failure import Failure
 from twisted.trial import unittest
 
 

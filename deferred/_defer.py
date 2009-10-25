@@ -13,7 +13,7 @@ Adapted to independent modules by Mikeal Rogers <mikeal.rogers@gmail.com>
 import logging
 import traceback
 
-from twisted.python import failure
+from deferred._failure import Failure
 
 
 # modification : unsignedID function from twisted.python.util.unsignedID
@@ -153,17 +153,17 @@ def maybeDeferred(f, *args, **kw):
     try:
         result = f(*args, **kw)
     except:
-        return fail(failure.Failure())
+        return fail(Failure())
 
     if isinstance(result, Deferred):
         return result
-    elif isinstance(result, failure.Failure):
+    elif isinstance(result, Failure):
         return fail(result)
     else:
         return succeed(result)
 
 def timeout(deferred):
-    deferred.errback(failure.Failure(TimeoutError("Callback timed out")))
+    deferred.errback(Failure(TimeoutError("Callback timed out")))
 
 def passthru(arg):
     return arg
@@ -300,8 +300,8 @@ class Deferred:
         or doesn't raise an Exception, processing will continue on the
         *success*-callback chain.
 
-        If the argument that's passed to me is not a failure.Failure instance,
-        it will be embedded in one. If no argument is passed, a failure.Failure
+        If the argument that's passed to me is not a Failure instance,
+        it will be embedded in one. If no argument is passed, a Failure
         instance will be created based on the current traceback stack.
 
         Passing a string as `fail' is deprecated, and will be punished with
@@ -310,8 +310,8 @@ class Deferred:
         @raise NoCurrentExceptionError: If C{fail} is C{None} but there is
             no current exception state.
         """
-        if not isinstance(fail, failure.Failure):
-            fail = failure.Failure(fail)
+        if not isinstance(fail, Failure):
+            fail = Failure(fail)
 
         self._startRunCallbacks(fail)
 
@@ -366,7 +366,7 @@ class Deferred:
             while self.callbacks:
                 item = self.callbacks.pop(0)
                 callback, args, kw = item[
-                    isinstance(self.result, failure.Failure)]
+                    isinstance(self.result, Failure)]
                 args = args or ()
                 kw = kw or {}
                 try:
@@ -388,9 +388,9 @@ class Deferred:
                         self.result.addBoth(self._continue)
                         break
                 except:
-                    self.result = failure.Failure()
+                    self.result = Failure()
 
-        if isinstance(self.result, failure.Failure):
+        if isinstance(self.result, Failure):
             self.result.cleanFailure()
             if self._debugInfo is None:
                 self._debugInfo = DebugInfo()
@@ -553,7 +553,7 @@ class DeferredList(Deferred):
             if succeeded == SUCCESS and self.fireOnOneCallback:
                 self.callback((result, index))
             elif succeeded == FAILURE and self.fireOnOneErrback:
-                self.errback(failure.Failure(FirstError(result, index)))
+                self.errback(Failure(FirstError(result, index)))
             elif self.finishedCount == len(self.resultList):
                 self.callback(self.resultList)
 
@@ -602,7 +602,7 @@ class waitForDeferred:
 
 
     def getResult(self):
-        if isinstance(self.result, failure.Failure):
+        if isinstance(self.result, Failure):
             self.result.raiseException()
         return self.result
 
@@ -767,7 +767,7 @@ def _inlineCallbacks(result, g, deferred):
     while 1:
         try:
             # Send the last result back as the result of the yield expression.
-            if isinstance(result, failure.Failure):
+            if isinstance(result, Failure):
                 result = result.throwExceptionIntoGenerator(g)
             else:
                 result = g.send(result)
