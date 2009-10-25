@@ -1,7 +1,7 @@
 # -*- test-case-name: twisted.test.test_failure -*-
 # See also test suite twisted.test.test_pbfailure
 
-# Copyright (c) 2001-2008 Twisted Matrix Laboratories.
+# Copyright (c) 2001-2009 Twisted Matrix Laboratories.
 # See LICENSE for details.
 
 
@@ -550,8 +550,3 @@ def _debuginit(self, exc_value=None, exc_type=None, exc_tb=None,
 def startDebugMode():
     """Enable debug hooks for Failures."""
     Failure.__init__ = _debuginit
-
-
-# Sibling imports - at the bottom and unqualified to avoid unresolvable
-# circularity
-import log

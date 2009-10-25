@@ -10,9 +10,11 @@ import sys
 import StringIO
 import traceback
 
+import deferred
+from deferred._failure import _Traceback
+
 from twisted.trial import unittest, util
 
-from twisted.python import failure
 
 try:
     from twisted.test import raiser
@@ -29,7 +31,7 @@ def getDivisionFailure():
     try:
         1/0
     except:
-        f = failure.Failure()
+        f = deferred.Failure()
     return f
 
 
@@ -40,7 +42,7 @@ class FailureTestCase(unittest.TestCase):
         try:
             raise NotImplementedError('test')
         except:
-            f = failure.Failure()
+            f = deferred.Failure()
         error = f.trap(SystemExit, RuntimeError)
         self.assertEquals(error, RuntimeError)
         self.assertEquals(f.type, NotImplementedError)
@@ -50,22 +52,22 @@ class FailureTestCase(unittest.TestCase):
         try:
             raise ValueError()
         except:
-            f = failure.Failure()
-        self.assertRaises(failure.Failure, f.trap, OverflowError)
+            f = deferred.Failure()
+        self.assertRaises(deferred.Failure, f.trap, OverflowError)
 
     def testPrinting(self):
         out = StringIO.StringIO()
         try:
             1/0
         except:
-            f = failure.Failure()
+            f = deferred.Failure()
         f.printDetailedTraceback(out)
         f.printBriefTraceback(out)
         f.printTraceback(out)
 
     def testExplictPass(self):
         e = RuntimeError()
-        f = failure.Failure(e)
+        f = deferred.Failure(e)
         f.trap(RuntimeError)
         self.assertEquals(f.value, e)
 
@@ -101,7 +103,7 @@ class FailureTestCase(unittest.TestCase):
         try:
             raise self._stringException
         except:
-            f = failure.Failure()
+            f = deferred.Failure()
         return f
 
     def test_raiseStringExceptions(self):
@@ -149,7 +151,7 @@ class FailureTestCase(unittest.TestCase):
         try:
             str(x)
         except:
-            f = failure.Failure()
+            f = deferred.Failure()
         self.assertEquals(f.value, x)
         try:
             f.getTraceback()
@@ -163,7 +165,7 @@ class FailureTestCase(unittest.TestCase):
         current interpreter exception state.  If no such state exists, creating
         the Failure should raise a synchronous exception.
         """
-        self.assertRaises(failure.NoCurrentExceptionError, failure.Failure)
+        self.assertRaises(deferred.NoCurrentExceptionError, deferred.Failure)
 
     def test_getTracebackObject(self):
         """
@@ -187,13 +189,13 @@ class FailureTestCase(unittest.TestCase):
 
     def test_getTracebackObjectWithoutTraceback(self):
         """
-        L{failure.Failure}s need not be constructed with traceback objects. If
+        L{deferred.Failure}s need not be constructed with traceback objects. If
         a C{Failure} has no traceback information at all, C{getTracebackObject}
         should just return None.
 
         None is a good value, because traceback.extract_tb(None) -> [].
         """
-        f = failure.Failure(Exception("some error"))
+        f = deferred.Failure(Exception("some error"))
         self.assertEqual(f.getTracebackObject(), None)
 
 class FindFailureTests(unittest.TestCase):
@@ -210,7 +212,7 @@ class FindFailureTests(unittest.TestCase):
         try:
             1/0
         except:
-            self.assertEqual(failure.Failure._findFailure(), None)
+            self.assertEqual(deferred.Failure._findFailure(), None)
         else:
             self.fail("No exception raised from 1/0!?")
 
@@ -220,7 +222,7 @@ class FindFailureTests(unittest.TestCase):
         Outside of an exception handler, _findFailure should return None.
         """
         self.assertEqual(sys.exc_info()[-1], None) #environment sanity check
-        self.assertEqual(failure.Failure._findFailure(), None)
+        self.assertEqual(deferred.Failure._findFailure(), None)
 
 
     def test_findFailure(self):
@@ -234,7 +236,7 @@ class FindFailureTests(unittest.TestCase):
         try:
             f.raiseException()
         except:
-            self.assertEqual(failure.Failure._findFailure(), f)
+            self.assertEqual(deferred.Failure._findFailure(), f)
         else:
             self.fail("No exception raised from raiseException!?")
 
@@ -251,7 +253,7 @@ class FindFailureTests(unittest.TestCase):
         try:
             f.raiseException()
         except:
-            newF = failure.Failure()
+            newF = deferred.Failure()
             self.assertEqual(f.getTraceback(), newF.getTraceback())
         else:
             self.fail("No exception raised from raiseException!?")
@@ -266,7 +268,7 @@ class FindFailureTests(unittest.TestCase):
         try:
             raiser.raiseException()
         except raiser.RaiserException:
-            f = failure.Failure()
+            f = deferred.Failure()
             self.assertTrue(f.check(raiser.RaiserException))
         else:
             self.fail("No exception raised from extension?!")
@@ -280,7 +282,7 @@ class FindFailureTests(unittest.TestCase):
 
 class TestFormattableTraceback(unittest.TestCase):
     """
-    Whitebox tests that show that L{failure._Traceback} constructs objects that
+    Whitebox tests that show that L{_Traceback} constructs objects that
     can be used by L{traceback.extract_tb}.
 
     If the objects can be used by L{traceback.extract_tb}, then they can be
@@ -293,7 +295,7 @@ class TestFormattableTraceback(unittest.TestCase):
         to be passed to L{traceback.extract_tb}, and we should get a singleton
         list containing a (filename, lineno, methodname, line) tuple.
         """
-        tb = failure._Traceback([['method', 'filename.py', 123, {}, {}]])
+        tb = _Traceback([['method', 'filename.py', 123, {}, {}]])
         # Note that we don't need to test that extract_tb correctly extracts
         # the line's contents. In this case, since filename.py doesn't exist,
         # it will just use None.
@@ -306,7 +308,7 @@ class TestFormattableTraceback(unittest.TestCase):
         to be passed to L{traceback.extract_tb}, and we should get a list
         containing a tuple for each frame.
         """
-        tb = failure._Traceback([
+        tb = _Traceback([
             ['method1', 'filename.py', 123, {}, {}],
             ['method2', 'filename.py', 235, {}, {}]])
         self.assertEqual(traceback.extract_tb(tb),
