@@ -1,6 +1,30 @@
+__all__ = [
+    'mergeFunctionMetadata',
+    'setIDFunction',
+    'unsignedID',
+    ]
+
 import inspect
 import new
 import sys
+
+
+_idFunction = id
+
+
+def setIDFunction(idFunction):
+    """
+    Change the function used by L{unsignedID} to determine the integer id value
+    of an object.  This is largely useful for testing to give L{unsignedID}
+    deterministic, easily-controlled behavior.
+
+    @param idFunction: A function with the signature of L{id}.
+    @return: The previous function being used by L{unsignedID}.
+    """
+    global _idFunction
+    oldIDFunction = _idFunction
+    _idFunction = idFunction
+    return oldIDFunction
 
 
 _HUGEINT = (sys.maxint + 1L) * 2L
@@ -12,7 +36,7 @@ def unsignedID(obj):
     Return the id of an object as an unsigned number so that its hex
     representation makes sense
     """
-    rval = id(obj)
+    rval = _idFunction(obj)
     if rval < 0:
         rval += _HUGEINT
     return rval
