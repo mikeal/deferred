@@ -4,7 +4,7 @@ desc = """Deferred objects without Twisted."""
 summ = """This is the Twisted implementation of Deferred objects with no requirements on the rest of Twisted for use a general purpose callback API."""
 
 PACKAGE_NAME = "deferred"
-PACKAGE_VERSION = "0.1"
+PACKAGE_VERSION = "0.2"
 
 setup(name=PACKAGE_NAME,
       version=PACKAGE_VERSION,
@@ -19,7 +19,7 @@ setup(name=PACKAGE_NAME,
       classifiers=['Development Status :: 4 - Beta',
                    'Environment :: Console',
                    'Intended Audience :: Developers',
-                   'License :: OSI Approved :: MIT',
+                   'License :: OSI Approved :: MIT License',
                    'Operating System :: OS Independent',
                    'Topic :: Software Development :: Libraries :: Python Modules',
                   ]
