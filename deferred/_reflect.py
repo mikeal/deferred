@@ -7,10 +7,7 @@ __all__ = [
 
 import traceback
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from io import StringIO
 
 
 from deferred._util import unsignedID

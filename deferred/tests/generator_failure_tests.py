@@ -70,7 +70,7 @@ class TwoPointFiveFailureTests(TestCase):
                 self.fail("Yield should have yielded exception.")
         g = generator()
         f = getDivisionFailure()
-        g.next()
+        next(g)
         self._throwIntoGenerator(f, g)
 
         self.assertEquals(stuff[0][0], ZeroDivisionError)
@@ -98,7 +98,7 @@ class TwoPointFiveFailureTests(TestCase):
                 self.fail("No exception sent to generator")
 
         g = generator()
-        g.next()
+        next(g)
         self._throwIntoGenerator(f, g)
 
         self.assertEqual(foundFailures, [f])
@@ -124,7 +124,7 @@ class TwoPointFiveFailureTests(TestCase):
             else:
                 self.fail("No exception sent to generator")
         g = generator()
-        g.next()
+        next(g)
         self._throwIntoGenerator(f, g)
 
         self.assertEqual(len(newFailures), 1)
@@ -145,7 +145,7 @@ class TwoPointFiveFailureTests(TestCase):
             except:
                 self.assertIsInstance(Failure().value, IndexError)
         g = generator()
-        g.next()
+        next(g)
         f = getDivisionFailure()
         self._throwIntoGenerator(f, g)
 
@@ -161,7 +161,7 @@ class TwoPointFiveFailureTests(TestCase):
             except:
                 [][1]
         g = generator()
-        g.next()
+        next(g)
         f = getDivisionFailure()
         try:
             self._throwIntoGenerator(f, g)

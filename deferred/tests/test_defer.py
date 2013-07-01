@@ -322,7 +322,7 @@ class DeferredTestCase(unittest.TestCase):
         S, E = [], []
         try:
             '10' + 5
-        except TypeError, e:
+        except TypeError as e:
             expected = str(e)
         d = deferred.maybeDeferred((lambda x: x + 5), '10')
         d.addCallbacks(S.append, E.append)
@@ -576,7 +576,7 @@ class AlreadyCalledTestCase(unittest.TestCase):
         self._call_1(d)
         try:
             self._call_2(d)
-        except deferred.AlreadyCalledError, e:
+        except deferred.AlreadyCalledError as e:
             self._check(e, "testAlreadyCalledDebug_CC", "_call_1", "_call_2")
         else:
             self.fail("second callback failed to raise AlreadyCalledError")
@@ -588,7 +588,7 @@ class AlreadyCalledTestCase(unittest.TestCase):
         self._call_1(d)
         try:
             self._err_2(d)
-        except deferred.AlreadyCalledError, e:
+        except deferred.AlreadyCalledError as e:
             self._check(e, "testAlreadyCalledDebug_CE", "_call_1", "_err_2")
         else:
             self.fail("second errback failed to raise AlreadyCalledError")
@@ -600,7 +600,7 @@ class AlreadyCalledTestCase(unittest.TestCase):
         self._err_1(d)
         try:
             self._call_2(d)
-        except deferred.AlreadyCalledError, e:
+        except deferred.AlreadyCalledError as e:
             self._check(e, "testAlreadyCalledDebug_EC", "_err_1", "_call_2")
         else:
             self.fail("second callback failed to raise AlreadyCalledError")
@@ -612,7 +612,7 @@ class AlreadyCalledTestCase(unittest.TestCase):
         self._err_1(d)
         try:
             self._err_2(d)
-        except deferred.AlreadyCalledError, e:
+        except deferred.AlreadyCalledError as e:
             self._check(e, "testAlreadyCalledDebug_EE", "_err_1", "_err_2")
         else:
             self.fail("second errback failed to raise AlreadyCalledError")
@@ -625,7 +625,7 @@ class AlreadyCalledTestCase(unittest.TestCase):
         self._call_1(d)
         try:
             self._call_2(d)
-        except deferred.AlreadyCalledError, e:
+        except deferred.AlreadyCalledError as e:
             self.failIf(e.args)
         else:
             self.fail("second callback failed to raise AlreadyCalledError")
@@ -861,16 +861,16 @@ class OtherPrimitives(unittest.TestCase):
 
         for i in range(M):
             queue.put(i)
-            self.assertEquals(gotten, range(i + 1))
+            self.assertEquals(gotten, list(range(i + 1)))
         for i in range(N):
             queue.put(N + i)
-            self.assertEquals(gotten, range(M))
+            self.assertEquals(gotten, list(range(M)))
         self.assertRaises(deferred.QueueOverflow, queue.put, None)
 
         gotten = []
         for i in range(N):
             queue.get().addCallback(gotten.append)
-            self.assertEquals(gotten, range(N, N + i + 1))
+            self.assertEquals(gotten, list(range(N, N + i + 1)))
 
         queue = deferred.DeferredQueue()
         gotten = []
@@ -878,7 +878,7 @@ class OtherPrimitives(unittest.TestCase):
             queue.get().addCallback(gotten.append)
         for i in range(N):
             queue.put(i)
-        self.assertEquals(gotten, range(N))
+        self.assertEquals(gotten, list(range(N)))
 
         queue = deferred.DeferredQueue(size=0)
         self.assertRaises(deferred.QueueOverflow, queue.put, None)

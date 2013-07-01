@@ -1,4 +1,4 @@
-from __future__ import generators, nested_scopes
+
 
 import sys
 
@@ -110,7 +110,7 @@ class DeferredGeneratorTests(BaseDefgenTests, unittest.TestCase):
         yield ow
         try:
             ow.getResult()
-        except ZeroDivisionError, e:
+        except ZeroDivisionError as e:
             self.assertEquals(str(e), 'OMG')
         yield "WOOSH"
         return
@@ -277,7 +277,7 @@ class InlineCallbacksTests(BaseDefgenTests, unittest.TestCase):
 
 if sys.version_info > (2, 5):
     # Load tests
-    exec inlineCallbacksTestsSource
+    exec(inlineCallbacksTestsSource)
 else:
     # Make a placeholder test case
     class InlineCallbacksTests(unittest.TestCase):
