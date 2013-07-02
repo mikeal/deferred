@@ -173,8 +173,8 @@ class Deferred:
 
         These will be executed when the 'master' callback is run.
         """
-        assert callable(callback)
-        assert errback == None or callable(errback)
+        assert hasattr(callback, '__call__')
+        assert errback == None or hasattr(errback,'__call__')
         cbs = ((callback, callbackArgs, callbackKeywords),
                (errback or (passthru), errbackArgs, errbackKeywords))
         self.callbacks.append(cbs)
@@ -365,11 +365,11 @@ class DebugInfo:
         info = ''
         if hasattr(self, "creator"):
             info += " C: Deferred was created:\n C:"
-            info += "".join(self.creator).rstrip().replace("\n","\n C:")
+            info += "".join(self.creator).rstrip().replace("\n", "\n C:")
             info += "\n"
         if hasattr(self, "invoker"):
             info += " I: First Invoker was:\n I:"
-            info += "".join(self.invoker).rstrip().replace("\n","\n I:")
+            info += "".join(self.invoker).rstrip().replace("\n", "\n I:")
             info += "\n"
         return info
 
@@ -489,8 +489,8 @@ class DeferredList(Deferred):
         index = 0
         for deferred in deferredList:
             deferred.addCallbacks(self._cbDeferred, self._cbDeferred,
-                                  callbackArgs=(index,SUCCESS),
-                                  errbackArgs=(index,FAILURE))
+                                  callbackArgs=(index, SUCCESS),
+                                  errbackArgs=(index, FAILURE))
             index = index + 1
 
     def _cbDeferred(self, result, index, succeeded):
@@ -572,9 +572,9 @@ def _deferGenerator(g, deferred):
     waiting = [True, # defgen is waiting for result?
                None] # result
 
-    while 1:
+    while True:
         try:
-            result = g.next()
+            result = next(g)
         except StopIteration:
             deferred.callback(result)
             return deferred
@@ -714,10 +714,11 @@ def _inlineCallbacks(result, g, deferred):
     waiting = [True, # waiting for result?
                None] # result
 
-    while 1:
+    while True:
         try:
             # Send the last result back as the result of the yield expression.
             if isinstance(result, Failure):
+                result.printTraceback()
                 result = result.throwExceptionIntoGenerator(g)
             else:
                 result = g.send(result)
@@ -725,7 +726,7 @@ def _inlineCallbacks(result, g, deferred):
             # fell off the end, or "return" statement
             deferred.callback(None)
             return deferred
-        except _DefGen_Return, e:
+        except _DefGen_Return as e:
             # returnValue call
             deferred.callback(e.value)
             return deferred

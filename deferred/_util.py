@@ -5,7 +5,6 @@ __all__ = [
     ]
 
 import inspect
-import new
 import sys
 
 
@@ -27,7 +26,7 @@ def setIDFunction(idFunction):
     return oldIDFunction
 
 
-_HUGEINT = (sys.maxint + 1L) * 2L
+_HUGEINT = (sys.maxsize + 1) * 2
 
 
 # Copied from twisted.python.util.unsignedID
@@ -59,10 +58,10 @@ def mergeFunctionMetadata(f, g):
         g.__name__ = f.__name__
     except TypeError:
         try:
-            merged = new.function(
-                g.func_code, g.func_globals,
+            merged = types.FunctionType(
+                g.__code__, g.__globals__,
                 f.__name__, inspect.getargspec(g)[-1],
-                g.func_closure)
+                g.__closure__)
         except TypeError:
             pass
     else:

@@ -43,8 +43,7 @@ class BrokenType(Breakable, type):
 
 
 
-class BTBase(Breakable):
-    __metaclass__ = BrokenType
+class BTBase(Breakable, metaclass=BrokenType):
     breakRepr = True
     breakStr = True
 

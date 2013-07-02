@@ -7,7 +7,7 @@ Test cases for failure module.
 """
 
 import sys
-import StringIO
+import io
 import traceback
 
 import deferred
@@ -56,7 +56,7 @@ class FailureTestCase(unittest.TestCase):
         self.assertRaises(deferred.Failure, f.trap, OverflowError)
 
     def testPrinting(self):
-        out = StringIO.StringIO()
+        out = io.StringIO()
         try:
             1/0
         except:
@@ -125,7 +125,7 @@ class FailureTestCase(unittest.TestCase):
         information, even for string exceptions.
         """
         failure = self._getStringFailure()
-        output = StringIO.StringIO()
+        output = io.StringIO()
         failure.printTraceback(file=output)
         lines = output.getvalue().splitlines()
         # The last line should be the value of the raised string

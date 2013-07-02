@@ -16,7 +16,7 @@ import sys
 import linecache
 import inspect
 import opcode
-from cStringIO import StringIO
+from io import StringIO
 
 from deferred import _reflect
 
@@ -40,7 +40,7 @@ def format_frames(frames, write, detail="default"):
     @type detail: string
     """
     if detail not in ('default', 'brief', 'verbose'):
-        raise ValueError, "Detail must be default, brief, or verbose. (not %r)" % (detail,)
+        raise ValueError("Detail must be default, brief, or verbose. (not %r)" % (detail,))
     w = write
     if detail == "brief":
         for method, filename, lineno, localVars, globalVars in frames:
@@ -163,7 +163,7 @@ class Failure:
         self.type = self.value = tb = None
 
         #strings Exceptions/Failures are bad, mmkay?
-        if isinstance(exc_value, (str, unicode)) and exc_type is None:
+        if isinstance(exc_value, str) and exc_type is None:
             import warnings
             warnings.warn(
                 "Don't pass strings (like %r) to failure.Failure (replacing with a DefaultException)." %
@@ -238,14 +238,14 @@ class Failure:
             else:
                 globalz = f.f_globals.copy()
             for d in globalz, localz:
-                if d.has_key("__builtins__"):
+                if "__builtins__" in d:
                     del d["__builtins__"]
             stack.insert(0, [
                 f.f_code.co_name,
                 f.f_code.co_filename,
                 f.f_lineno,
-                localz.items(),
-                globalz.items(),
+                list(localz.items()),
+                list(globalz.items()),
                 ])
             f = f.f_back
 
@@ -257,20 +257,20 @@ class Failure:
             else:
                 globalz = f.f_globals.copy()
             for d in globalz, localz:
-                if d.has_key("__builtins__"):
+                if "__builtins__" in d:
                     del d["__builtins__"]
 
             frames.append([
                 f.f_code.co_name,
                 f.f_code.co_filename,
                 tb.tb_lineno,
-                localz.items(),
-                globalz.items(),
+                list(localz.items()),
+                list(globalz.items()),
                 ])
             tb = tb.tb_next
         if inspect.isclass(self.type) and issubclass(self.type, Exception):
             parentCs = _reflect.allYourBase(self.type)
-            self.parents = map(_reflect.qual, parentCs)
+            self.parents = list(map(_reflect.qual, parentCs))
             self.parents.append(_reflect.qual(self.type))
         else:
             self.parents = [self.type]
@@ -323,7 +323,7 @@ class Failure:
         raise the original exception, preserving traceback
         information if available.
         """
-        raise self.type, self.value, self.tb
+        raise self.type(self.value).with_traceback(self.tb)
 
 
     def throwExceptionIntoGenerator(self, g):
@@ -335,7 +335,7 @@ class Failure:
         @raise StopIteration: If there are no more values in the generator.
         @raise anything else: Anything that the generator raises.
         """
-        return g.throw(self.type, self.value, self.tb)
+        return g.throw(self.type(self.value).with_traceback(self.tb))
 
 
     def _findFailure(cls):
@@ -361,7 +361,7 @@ class Failure:
         # the tracebacks) here when it is used is not that big a deal.
 
         # handle raiseException-originated exceptions
-        if lastFrame.f_code is cls.raiseException.func_code:
+        if lastFrame.f_code is cls.raiseException.__code__:
             return lastFrame.f_locals.get('self')
 
         # handle throwExceptionIntoGenerator-originated exceptions
@@ -382,7 +382,7 @@ class Failure:
         # second last item):
         if secondLastTb:
             frame = secondLastTb.tb_frame
-            if frame.f_code is cls.throwExceptionIntoGenerator.func_code:
+            if frame.f_code is cls.throwExceptionIntoGenerator.__code__:
                 return frame.f_locals.get('self')
 
         # if the exception was caught below the generator.throw
@@ -391,7 +391,7 @@ class Failure:
         # generator frame itself, thus its caller is
         # throwExceptionIntoGenerator).
         frame = tb.tb_frame.f_back
-        if frame and frame.f_code is cls.throwExceptionIntoGenerator.func_code:
+        if frame and frame.f_code is cls.throwExceptionIntoGenerator.__code__:
             return frame.f_locals.get('self')
 
     _findFailure = classmethod(_findFailure)
@@ -476,7 +476,8 @@ class Failure:
         """Emulate Python's standard error reporting mechanism.
         """
         if file is None:
-            file = log.logerr
+            import sys
+            file = sys.stderr
         w = file.write
 
         # Preamble
@@ -510,7 +511,7 @@ class Failure:
             # qual() doesn't make any sense on a string, so check for this
             # case here and just write out the string if that's what we
             # have.
-            if isinstance(self.type, (str, unicode)):
+            if isinstance(self.type, str):
                 w(self.type + "\n")
             else:
                 w("%s: %s\n" % (_reflect.qual(self.type),
@@ -538,11 +539,11 @@ class Failure:
 DO_POST_MORTEM = True
 
 def _debuginit(self, exc_value=None, exc_type=None, exc_tb=None,
-             Failure__init__=Failure.__init__.im_func):
+             Failure__init__=Failure.__init__):
     if (exc_value, exc_type, exc_tb) == (None, None, None):
         exc = sys.exc_info()
         if not exc[0] == self.__class__ and DO_POST_MORTEM:
-            print "Jumping into debugger for post-mortem of exception '%s':" % exc[1]
+            print("Jumping into debugger for post-mortem of exception '%s':" % exc[1])
             import pdb
             pdb.post_mortem(exc[2])
     Failure__init__(self, exc_value, exc_type, exc_tb)
